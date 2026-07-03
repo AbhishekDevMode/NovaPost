@@ -5,6 +5,7 @@ import { Search, Clock, MessageSquare, Heart } from 'lucide-react';
 import { format } from 'date-fns';
 
 const Home = () => {
+    const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [keyword, setKeyword] = useState('');
@@ -25,7 +26,7 @@ const Home = () => {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      let url = `http://localhost:5000/api/posts?page=${page}`;
+      let url = `${BASE_URL}/api/posts?page=${page}`;
       if (keyword) url += `&keyword=${keyword}`;
       if (activeCategory) url += `&category=${activeCategory}`;
 

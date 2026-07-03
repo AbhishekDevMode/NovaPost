@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 const COLORS = ['#4f46e5', '#ec4899', '#8b5cf6', '#10b981', '#f59e0b'];
 
 const Dashboard = () => {
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
   const { user } = useContext(AuthContext);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -16,7 +17,7 @@ const Dashboard = () => {
   const fetchAnalytics = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/analytics', config);
+      const { data } = await axios.get(`${BASE_URL}/api/analytics`, config);
       setAnalytics(data);
     } catch (error) {
       console.error(error);
@@ -32,7 +33,7 @@ const Dashboard = () => {
     if (window.confirm('Are you sure you want to delete this post?')) {
       try {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        await axios.delete(`http://localhost:5000/api/posts/id/${id}`, config);
+        await axios.delete(`${BASE_URL}/api/posts/id/${id}`, config);
         fetchAnalytics(); 
       } catch (error) {
         console.error(error);

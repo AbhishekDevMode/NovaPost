@@ -21,7 +21,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/post/:slug" element={<PostDetail />} />
             
-            {/* Protected Routes - Author Only */}
+    
             <Route element={<PrivateRoute authorOnly={true} />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/editor" element={<Editor />} />
