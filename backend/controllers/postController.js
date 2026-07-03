@@ -38,9 +38,7 @@ const getPosts = async (req, res) => {
   }
 };
 
-// @desc    Get single post by slug
-// @route   GET /api/posts/:slug
-// @access  Public
+
 const getPostBySlug = async (req, res) => {
   try {
     const post = await Post.findOne({ slug: req.params.slug })
@@ -57,9 +55,7 @@ const getPostBySlug = async (req, res) => {
   }
 };
 
-// @desc    Create a post
-// @route   POST /api/posts
-// @access  Private/Author
+
 const createPost = async (req, res) => {
   try {
     const { title, subtitle, content, coverImage, status, category, tags } = req.body;
@@ -81,9 +77,7 @@ const createPost = async (req, res) => {
   }
 };
 
-// @desc    Update a post
-// @route   PUT /api/posts/:id
-// @access  Private/Author
+
 const updatePost = async (req, res) => {
   try {
     let post = await Post.findById(req.params.id);
@@ -92,7 +86,6 @@ const updatePost = async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    // Check if user is the author
     if (post.author.toString() !== req.user._id.toString()) {
       return res.status(401).json({ message: 'Not authorized to update this post' });
     }
@@ -108,9 +101,7 @@ const updatePost = async (req, res) => {
   }
 };
 
-// @desc    Delete a post
-// @route   DELETE /api/posts/:id
-// @access  Private/Author
+
 const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -134,9 +125,7 @@ const deletePost = async (req, res) => {
   }
 };
 
-// @desc    Like a post
-// @route   POST /api/posts/:id/like
-// @access  Private
+
 const likePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -161,9 +150,7 @@ const likePost = async (req, res) => {
   }
 };
 
-// @desc    Get comments for a post
-// @route   GET /api/posts/:id/comments
-// @access  Public
+
 const getComments = async (req, res) => {
   try {
     const comments = await Comment.find({ post: req.params.id })
@@ -176,9 +163,7 @@ const getComments = async (req, res) => {
   }
 };
 
-// @desc    Add comment to a post
-// @route   POST /api/posts/:id/comments
-// @access  Private
+
 const addComment = async (req, res) => {
   try {
     const { text } = req.body;

@@ -47,14 +47,11 @@ const registerUser = async (req, res) => {
   }
 };
 
-// @desc    Authenticate a user
-// @route   POST /api/auth/login
-// @access  Public
+
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Check for user email
     const user = await User.findOne({ email }).select('+password');
 
     if (user && (await user.matchPassword(password))) {
@@ -73,9 +70,7 @@ const loginUser = async (req, res) => {
   }
 };
 
-// @desc    Get user data
-// @route   GET /api/auth/me
-// @access  Private
+
 const getMe = async (req, res) => {
   try {
     res.status(200).json(req.user);

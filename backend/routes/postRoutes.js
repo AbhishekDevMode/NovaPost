@@ -19,7 +19,7 @@ router.route('/')
 router.route('/:slug')
   .get(getPostBySlug);
 
-// using ID for update/delete is easier
+// using ID for update/delete
 router.route('/id/:id')
   .put(protect, authorOnly, updatePost)
   .delete(protect, authorOnly, deletePost);

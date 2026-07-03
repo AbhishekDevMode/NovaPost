@@ -39,7 +39,7 @@ const getAuthorAnalytics = async (req, res) => {
       totalLikes,
       totalComments,
       chartData,
-      posts, // sending posts along so dashboard can list them
+      posts, 
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
