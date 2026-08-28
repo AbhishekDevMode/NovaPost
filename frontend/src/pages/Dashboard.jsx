@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 import { AuthContext } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
@@ -9,7 +10,7 @@ import { format } from 'date-fns';
 const COLORS = ['#4f46e5', '#ec4899', '#8b5cf6', '#10b981', '#f59e0b'];
 
 const Dashboard = () => {
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+  const BASE_URL = API_BASE_URL;
   const { user } = useContext(AuthContext);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);

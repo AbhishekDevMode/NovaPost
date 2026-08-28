@@ -1,13 +1,14 @@
 import { useState, useEffect, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL } from '../config/api';
 import { AuthContext } from "../context/AuthContext";
 import parse from "html-react-parser";
 import { format } from "date-fns";
 import { Heart, MessageCircle, Clock, User, Share2 } from "lucide-react";
 
 const PostDetail = () => {
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+  const BASE_URL = API_BASE_URL;
 
   const { slug } = useParams();
   const { user } = useContext(AuthContext);

@@ -3,9 +3,9 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Search, Clock, MessageSquare, Heart } from 'lucide-react';
 import { format } from 'date-fns';
+import { API_BASE_URL } from '../config/api';
 
 const Home = () => {
-    const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [keyword, setKeyword] = useState('');
@@ -16,7 +16,7 @@ const Home = () => {
 
   const fetchCategories = async () => {
     try {
-      const { data } = await axios.get('http://localhost:5000/api/categories');
+      const { data } = await axios.get(`${API_BASE_URL}/api/categories`);
       setCategories(data);
     } catch (error) {
       console.error(error);
@@ -26,7 +26,7 @@ const Home = () => {
   const fetchPosts = async () => {
     setLoading(true);
     try {
-      let url = `${BASE_URL}/api/posts?page=${page}`;
+      let url = `${API_BASE_URL}/api/posts?page=${page}`;
       if (keyword) url += `&keyword=${keyword}`;
       if (activeCategory) url += `&category=${activeCategory}`;
 
