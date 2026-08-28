@@ -2,8 +2,10 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 
+const getJwtSecret = () => process.env.JWT_SECRET || 'supersecretkey_change_in_production';
+
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id }, getJwtSecret(), {
     expiresIn: '30d',
   });
 };
