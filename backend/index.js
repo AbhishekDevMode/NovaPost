@@ -54,6 +54,14 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    jwtSecretSet: Boolean(process.env.JWT_SECRET),
+    time: new Date().toISOString()
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
