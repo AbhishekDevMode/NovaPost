@@ -1,7 +1,7 @@
 import { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Mail, Lock, Sparkles, Shield } from 'lucide-react';
+import { User, Mail, Lock, Shield } from 'lucide-react';
 
 const Register = () => {
   const [name, setName] = useState('');
@@ -24,32 +24,32 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 bg-zinc-50">
-      <div className="bg-white p-8 sm:p-10 rounded-3xl shadow-sm border border-zinc-200/80 w-full max-w-md space-y-6">
+    <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 bg-zinc-50 dark:bg-zinc-950 transition-colors">
+      <div className="bg-white dark:bg-zinc-900 p-8 sm:p-10 rounded-3xl shadow-sm border border-zinc-200/80 dark:border-zinc-800 w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
           <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-extrabold text-2xl mx-auto shadow-sm">
             N
           </div>
-          <h2 className="text-2xl font-bold text-zinc-900 tracking-tight">Create Account</h2>
-          <p className="text-xs text-zinc-500">Join NovaPost to read and publish stories</p>
+          <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Create Account</h2>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">Join NovaPost to read and publish stories</p>
         </div>
 
         {error && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-600 px-4 py-3 rounded-2xl text-xs font-medium text-center">
+          <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 px-4 py-3 rounded-2xl text-xs font-medium text-center">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-zinc-700">Full Name</label>
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Full Name</label>
             <div className="relative flex items-center">
-              <User size={16} className="absolute left-3.5 text-zinc-400" />
+              <User size={16} className="absolute left-3.5 text-zinc-400 dark:text-zinc-500" />
               <input
                 type="text"
                 required
                 placeholder="Jane Doe"
-                className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white focus:border-indigo-600 transition"
+                className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white dark:focus:bg-zinc-900 focus:border-indigo-600 transition"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -57,14 +57,14 @@ const Register = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-zinc-700">Email Address</label>
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Email Address</label>
             <div className="relative flex items-center">
-              <Mail size={16} className="absolute left-3.5 text-zinc-400" />
+              <Mail size={16} className="absolute left-3.5 text-zinc-400 dark:text-zinc-500" />
               <input
                 type="email"
                 required
                 placeholder="name@example.com"
-                className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white focus:border-indigo-600 transition"
+                className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white dark:focus:bg-zinc-900 focus:border-indigo-600 transition"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -72,14 +72,14 @@ const Register = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-zinc-700">Password</label>
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Password</label>
             <div className="relative flex items-center">
-              <Lock size={16} className="absolute left-3.5 text-zinc-400" />
+              <Lock size={16} className="absolute left-3.5 text-zinc-400 dark:text-zinc-500" />
               <input
                 type="password"
                 required
                 placeholder="Minimum 6 characters"
-                className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white focus:border-indigo-600 transition"
+                className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white dark:focus:bg-zinc-900 focus:border-indigo-600 transition"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -87,11 +87,11 @@ const Register = () => {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-zinc-700">Account Type</label>
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">Account Type</label>
             <div className="relative flex items-center">
-              <Shield size={16} className="absolute left-3.5 text-zinc-400" />
+              <Shield size={16} className="absolute left-3.5 text-zinc-400 dark:text-zinc-500" />
               <select
-                className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white focus:border-indigo-600 transition appearance-none cursor-pointer"
+                className="w-full pl-10 pr-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white dark:focus:bg-zinc-900 focus:border-indigo-600 transition appearance-none cursor-pointer"
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
               >
@@ -109,9 +109,9 @@ const Register = () => {
           </button>
         </form>
 
-        <p className="text-center text-xs text-zinc-500 pt-2 border-t border-zinc-100">
+        <p className="text-center text-xs text-zinc-500 dark:text-zinc-400 pt-2 border-t border-zinc-100 dark:border-zinc-800">
           Already registered?{' '}
-          <Link to="/login" className="text-indigo-600 hover:underline font-semibold">
+          <Link to="/login" className="text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
             Log in here
           </Link>
         </p>

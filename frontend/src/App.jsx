@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import Layout from './components/layout/Layout';
 import PrivateRoute from './components/routing/PrivateRoute';
 
@@ -12,25 +13,26 @@ import Editor from './pages/Editor';
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/post/:slug" element={<PostDetail />} />
-            
-    
-            <Route element={<PrivateRoute authorOnly={true} />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/editor" element={<Editor />} />
-              <Route path="/editor/:id" element={<Editor />} />
-            </Route>
-          </Routes>
-        </Layout>
-      </Router>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/post/:slug" element={<PostDetail />} />
+
+              <Route element={<PrivateRoute authorOnly={true} />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/editor" element={<Editor />} />
+                <Route path="/editor/:id" element={<Editor />} />
+              </Route>
+            </Routes>
+          </Layout>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
