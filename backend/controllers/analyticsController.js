@@ -2,6 +2,7 @@ const Post = require('../models/Post');
 const Comment = require('../models/Comment');
 
 const getAuthorAnalytics = async (req, res) => {
+  
   try {
     const authorId = req.user._id;
 
