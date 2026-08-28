@@ -1,29 +1,30 @@
-import { useState, useEffect, useContext } from "react";
-import axios from "axios";
+import { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
-import { AuthContext } from "../context/AuthContext";
-import { useNavigate, useParams } from "react-router-dom";
-import ReactQuill from "react-quill-new";
-import "react-quill-new/dist/quill.snow.css";
+import { AuthContext } from '../context/AuthContext';
+import { useNavigate, useParams, Link } from 'react-router-dom';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
+import { ArrowLeft, Plus, Image as ImageIcon, Tag, FolderPlus, Save } from 'lucide-react';
 
 const Editor = () => {
   const BASE_URL = API_BASE_URL;
 
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
-  const { id } = useParams(); // if id exists, we are editing
+  const { id } = useParams();
 
-  const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
-  const [content, setContent] = useState("");
-  const [coverImage, setCoverImage] = useState("");
-  const [category, setCategory] = useState("");
-  const [tags, setTags] = useState("");
-  const [status, setStatus] = useState("Draft");
+  const [title, setTitle] = useState('');
+  const [subtitle, setSubtitle] = useState('');
+  const [content, setContent] = useState('');
+  const [coverImage, setCoverImage] = useState('');
+  const [category, setCategory] = useState('');
+  const [tags, setTags] = useState('');
+  const [status, setStatus] = useState('Draft');
 
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [newCatName, setNewCatName] = useState("");
+  const [newCatName, setNewCatName] = useState('');
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -44,21 +45,16 @@ const Editor = () => {
     if (id) {
       const fetchPost = async () => {
         try {
-          const { data } = await axios.get(`${BASE_URL}/api/posts/id/${id}`); // wait, we don't have a route by id for GET, we use slug. Let's adjust backend or we can get it from dashboard analytics data if we had global state.
-          // Since we need to get post by id for editing, let's fetch all author posts from analytics and find it.
           const config = { headers: { Authorization: `Bearer ${user.token}` } };
-          const analyticsRes = await axios.get(
-            `${BASE_URL}/api/analytics`,
-            config,
-          );
+          const analyticsRes = await axios.get(`${BASE_URL}/api/analytics`, config);
           const post = analyticsRes.data.posts.find((p) => p._id === id);
           if (post) {
             setTitle(post.title);
-            setSubtitle(post.subtitle || "");
+            setSubtitle(post.subtitle || '');
             setContent(post.content);
-            setCoverImage(post.coverImage || "");
-            setCategory(post.category?._id || "");
-            setTags(post.tags?.join(", ") || "");
+            setCoverImage(post.coverImage || '');
+            setCategory(post.category?._id || '');
+            setTags(post.tags?.join(', ') || '');
             setStatus(post.status);
           }
         } catch (error) {
@@ -74,28 +70,28 @@ const Editor = () => {
     if (!newCatName.trim()) return;
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.post(
-        `${BASE_URL}/api/categories`,
-        { name: newCatName },
-        config,
-      );
+      const { data } = await axios.post(`${BASE_URL}/api/categories`, { name: newCatName }, config);
       setCategories([...categories, data]);
       setCategory(data._id);
-      setNewCatName("");
+      setNewCatName('');
     } catch (error) {
-      alert(error.response?.data?.message || "Error creating category");
+      alert(error.response?.data?.message || 'Error creating category');
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!title.trim()) {
+      alert('Please enter a title');
+      return;
+    }
     setLoading(true);
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       const tagsArray = tags
-        .split(",")
+        .split(',')
         .map((tag) => tag.trim())
-        .filter((tag) => tag !== "");
+        .filter((tag) => tag !== '');
 
       const postData = {
         title,
@@ -113,9 +109,9 @@ const Editor = () => {
         await axios.post(`${BASE_URL}/api/posts`, postData, config);
       }
 
-      navigate("/dashboard");
+      navigate('/dashboard');
     } catch (error) {
-      alert(error.response?.data?.message || "Error saving post");
+      alert(error.response?.data?.message || 'Error saving post');
     }
     setLoading(false);
   };
@@ -123,169 +119,178 @@ const Editor = () => {
   const modules = {
     toolbar: [
       [{ header: [1, 2, 3, false] }],
-      ["bold", "italic", "underline", "strike", "blockquote"],
-      [
-        { list: "ordered" },
-        { list: "bullet" },
-        { indent: "-1" },
-        { indent: "+1" },
-      ],
-      ["link", "image"],
-      ["clean"],
+      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+      [{ list: 'ordered' }, { list: 'bullet' }, { indent: '-1' }, { indent: '+1' }],
+      ['link', 'image'],
+      ['clean'],
     ],
   };
 
   return (
-    <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-        <h1 className="text-2xl font-bold text-gray-900">
-          {id ? "Edit Post" : "Create New Post"}
-        </h1>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setStatus("Draft")}
-            className={`px-4 py-2 rounded-lg font-medium transition ${status === "Draft" ? "bg-amber-100 text-amber-700" : "bg-white border text-gray-600 hover:bg-gray-50"}`}
+    <div className="max-w-6xl mx-auto my-8 px-4 space-y-6">
+      {/* Top Action Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl shadow-xs border border-zinc-200/80">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/dashboard"
+            className="p-2 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 rounded-full transition"
+            title="Back to Dashboard"
           >
-            Draft
-          </button>
+            <ArrowLeft size={18} />
+          </Link>
+          <div>
+            <h1 className="text-2xl font-extrabold text-zinc-900 tracking-tight">
+              {id ? 'Edit Story' : 'Draft New Story'}
+            </h1>
+            <p className="text-xs text-zinc-400">Compose and format your article</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex bg-zinc-100 p-1 rounded-full border border-zinc-200/60">
+            <button
+              onClick={() => setStatus('Draft')}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+                status === 'Draft' ? 'bg-amber-100 text-amber-800 shadow-xs' : 'text-zinc-500 hover:text-zinc-900'
+              }`}
+            >
+              Draft
+            </button>
+            <button
+              onClick={() => setStatus('Published')}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition ${
+                status === 'Published' ? 'bg-emerald-100 text-emerald-800 shadow-xs' : 'text-zinc-500 hover:text-zinc-900'
+              }`}
+            >
+              Published
+            </button>
+          </div>
+
           <button
-            onClick={() => setStatus("Published")}
-            className={`px-4 py-2 rounded-lg font-medium transition ${status === "Published" ? "bg-emerald-100 text-emerald-700" : "bg-white border text-gray-600 hover:bg-gray-50"}`}
+            onClick={handleSubmit}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-5 py-2.5 rounded-full shadow-xs transition disabled:opacity-50"
           >
-            Published
+            <Save size={15} />
+            <span>{loading ? 'Saving...' : `Save as ${status}`}</span>
           </button>
         </div>
       </div>
 
-      <div className="p-8 flex flex-col lg:flex-row gap-8">
-        {/* Main Editor */}
-        <div className="lg:w-2/3 space-y-6">
+      {/* Editor Content Area */}
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Main Editor Body */}
+        <div className="lg:w-2/3 bg-white p-6 sm:p-8 rounded-3xl shadow-xs border border-zinc-200/80 space-y-6">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Post Title
-            </label>
+            <label className="block text-xs font-semibold text-zinc-700 mb-1.5">Article Title</label>
             <input
               type="text"
               required
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition text-xl font-bold"
-              placeholder="Give it a catchy title..."
+              className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-2xl text-xl font-bold text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white focus:border-indigo-600 transition"
+              placeholder="Enter a descriptive, engaging title..."
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
+
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Subtitle / Summary
-            </label>
+            <label className="block text-xs font-semibold text-zinc-700 mb-1.5">Subtitle / Abstract</label>
             <input
               type="text"
-              className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
-              placeholder="A brief summary..."
+              className="w-full px-4 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white focus:border-indigo-600 transition"
+              placeholder="Brief summary or hook..."
               value={subtitle}
               onChange={(e) => setSubtitle(e.target.value)}
             />
           </div>
-          <div className="h-[400px] pb-12">
-            <label className="block text-sm font-semibold text-gray-700 mb-1">
-              Content
-            </label>
-            <ReactQuill
-              theme="snow"
-              value={content}
-              onChange={setContent}
-              modules={modules}
-              className="h-full rounded-xl overflow-hidden"
-            />
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-semibold text-zinc-700">Body Content</label>
+            <div className="rounded-2xl border border-zinc-200 overflow-hidden min-h-[350px]">
+              <ReactQuill
+                theme="snow"
+                value={content}
+                onChange={setContent}
+                modules={modules}
+                placeholder="Write your main article content here..."
+                className="h-72"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Sidebar Settings */}
+        {/* Sidebar Publishing Meta */}
         <div className="lg:w-1/3 space-y-6">
-          <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 space-y-6">
-            <h3 className="font-bold text-gray-800 text-lg border-b border-gray-200 pb-2">
-              Publish Settings
-            </h3>
+          <div className="bg-white p-6 rounded-3xl shadow-xs border border-zinc-200/80 space-y-6">
+            <h3 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-3">Publish Settings</h3>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Cover Image URL
+            {/* Cover Image */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-zinc-700 flex items-center gap-1.5">
+                <ImageIcon size={14} className="text-zinc-400" /> Cover Image URL
               </label>
               <input
                 type="text"
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition text-sm"
-                placeholder="https://..."
+                className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white transition"
+                placeholder="https://images.unsplash.com/..."
                 value={coverImage}
                 onChange={(e) => setCoverImage(e.target.value)}
               />
               {coverImage && (
-                <div className="mt-3 rounded-lg overflow-hidden h-32 bg-gray-200">
-                  <img
-                    src={coverImage}
-                    alt="Cover Preview"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="rounded-xl overflow-hidden h-36 bg-zinc-100 border border-zinc-200 mt-2">
+                  <img src={coverImage} alt="Cover Preview" className="w-full h-full object-cover" />
                 </div>
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Category
+            {/* Category Select */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-zinc-700 flex items-center gap-1.5">
+                <FolderPlus size={14} className="text-zinc-400" /> Category
               </label>
               <select
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition text-sm mb-2"
+                className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white transition cursor-pointer"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 required
               >
-                <option value="" disabled>
-                  Select a category
-                </option>
+                <option value="" disabled>Select category</option>
                 {categories.map((c) => (
-                  <option key={c._id} value={c._id}>
-                    {c.name}
-                  </option>
+                  <option key={c._id} value={c._id}>{c.name}</option>
                 ))}
               </select>
 
-              {/* Quick Add Category */}
-              <form onSubmit={handleCreateCategory} className="flex gap-2">
+              {/* Create Category form */}
+              <form onSubmit={handleCreateCategory} className="flex gap-2 pt-1">
                 <input
                   type="text"
-                  placeholder="New Category"
-                  className="flex-1 px-3 py-1.5 border border-gray-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="Add new topic..."
+                  className="flex-1 px-3 py-1.5 bg-zinc-50 border border-zinc-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-indigo-600/30"
                   value={newCatName}
                   onChange={(e) => setNewCatName(e.target.value)}
                 />
                 <button
                   type="submit"
-                  className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1.5 rounded-lg text-sm font-medium transition"
+                  className="bg-zinc-900 hover:bg-black text-white px-3 py-1.5 rounded-lg text-xs font-semibold transition"
                 >
                   Add
                 </button>
               </form>
             </div>
 
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
-                Tags (comma separated)
+            {/* Tags */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-zinc-700 flex items-center gap-1.5">
+                <Tag size={14} className="text-zinc-400" /> Tags
               </label>
               <input
                 type="text"
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition text-sm"
-                placeholder="tech, coding, tutorial"
+                className="w-full px-3.5 py-2 bg-zinc-50 border border-zinc-200 rounded-xl text-xs text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-600/30 focus:bg-white transition"
+                placeholder="react, tailwind, design (comma separated)"
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
               />
             </div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed mt-4"
-            >
-              {loading ? "Saving..." : `Save as ${status}`}
-            </button>
           </div>
         </div>
       </div>

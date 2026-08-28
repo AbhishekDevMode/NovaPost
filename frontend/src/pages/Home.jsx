@@ -1,25 +1,34 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-import { Search, Clock, MessageSquare, Heart } from 'lucide-react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Search, Clock, Heart, Sparkles, BookOpen, User, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { API_BASE_URL } from '../config/api';
 
 const Home = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [keyword, setKeyword] = useState('');
-  const [activeCategory, setActiveCategory] = useState('');
+  const [keyword, setKeyword] = useState(searchParams.get('keyword') || '');
+  const [activeCategory, setActiveCategory] = useState(searchParams.get('category') || '');
   const [page, setPage] = useState(1);
   const [pages, setPages] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  // Synchronize state if URL query params change (e.g. from navbar search)
+  useEffect(() => {
+    const k = searchParams.get('keyword') || '';
+    const c = searchParams.get('category') || '';
+    setKeyword(k);
+    setActiveCategory(c);
+  }, [searchParams]);
 
   const fetchCategories = async () => {
     try {
       const { data } = await axios.get(`${API_BASE_URL}/api/categories`);
       setCategories(data);
     } catch (error) {
-      console.error(error);
+      console.error('Error fetching categories:', error);
     }
   };
 
@@ -27,14 +36,14 @@ const Home = () => {
     setLoading(true);
     try {
       let url = `${API_BASE_URL}/api/posts?page=${page}`;
-      if (keyword) url += `&keyword=${keyword}`;
-      if (activeCategory) url += `&category=${activeCategory}`;
+      if (keyword) url += `&keyword=${encodeURIComponent(keyword)}`;
+      if (activeCategory) url += `&category=${encodeURIComponent(activeCategory)}`;
 
       const { data } = await axios.get(url);
-      setPosts(data.posts);
-      setPages(data.pages);
+      setPosts(data.posts || []);
+      setPages(data.pages || 1);
     } catch (error) {
-      console.error(error);
+      console.error('Error fetching posts:', error);
     }
     setLoading(false);
   };
@@ -45,138 +54,229 @@ const Home = () => {
 
   useEffect(() => {
     fetchPosts();
-  }, [page, activeCategory, keyword]); // will re-fetch when these change
+  }, [page, activeCategory, keyword]);
 
-  const handleSearch = (e) => {
+  const handleSearchSubmit = (e) => {
     e.preventDefault();
     setPage(1);
-    fetchPosts();
+    const params = {};
+    if (keyword) params.keyword = keyword;
+    if (activeCategory) params.category = activeCategory;
+    setSearchParams(params);
+  };
+
+  const handleCategorySelect = (catId) => {
+    setActiveCategory(catId);
+    setPage(1);
+    const params = {};
+    if (keyword) params.keyword = keyword;
+    if (catId) params.category = catId;
+    setSearchParams(params);
+  };
+
+  const calculateReadingTime = (content, subtitle) => {
+    const text = (content || '') + ' ' + (subtitle || '');
+    const cleanText = text.replace(/<[^>]+>/g, '');
+    const wordCount = cleanText.split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.ceil(wordCount / 200));
   };
 
   return (
-    <div className="space-y-8">
-      {/* Hero / Search Section */}
-      <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100 flex flex-col items-center text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
-          Discover <span className="text-indigo-600">Ideas</span> That Matter
-        </h1>
-        <p className="text-gray-500 max-w-2xl text-lg mb-8">
-          Read, write, and deepen your understanding on topics ranging from technology to lifestyle.
-        </p>
-        
-        <form onSubmit={handleSearch} className="w-full max-w-xl relative">
-          <input
-            type="text"
-            placeholder="Search for articles..."
-            className="w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-full focus:ring-2 focus:ring-indigo-500 shadow-inner text-gray-700 outline-none transition"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
-          <Search className="absolute left-4 top-4 text-gray-400" size={20} />
-          <button type="submit" className="absolute right-2 top-2 bg-indigo-600 text-white px-6 py-2 rounded-full font-medium hover:bg-indigo-700 transition">
-            Search
-          </button>
-        </form>
-      </div>
+    <div className="min-h-screen">
+      {/* Hero Header Section */}
+      <section className="bg-gradient-to-b from-white to-zinc-50/50 border-b border-zinc-200/60 py-16 px-4">
+        <div className="max-w-4xl mx-auto text-center space-y-6">
+          <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide border border-indigo-100/80 shadow-xs">
+            <Sparkles size={14} className="text-indigo-600" />
+            <span>Editorial Stories & Insights</span>
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Sidebar for Categories */}
-        <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 pb-2 border-b border-gray-100">Explore Topics</h3>
-            <div className="flex flex-col space-y-2">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-zinc-900 tracking-tight leading-tight">
+            Thoughtful Writing on <span className="text-indigo-600 underline decoration-indigo-200 underline-offset-8">Technology</span> & Culture.
+          </h1>
+
+          <p className="text-zinc-500 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+            Discover compelling stories, expert analysis, and fresh perspectives from creators worldwide.
+          </p>
+
+          {/* Search Box */}
+          <form onSubmit={handleSearchSubmit} className="max-w-xl mx-auto pt-2">
+            <div className="relative flex items-center">
+              <Search className="absolute left-4 text-zinc-400" size={18} />
+              <input
+                type="text"
+                placeholder="Search topics, titles, or tags..."
+                className="w-full pl-11 pr-28 py-3.5 bg-white border border-zinc-200 rounded-full shadow-sm text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+              />
               <button
-                onClick={() => { setActiveCategory(''); setPage(1); }}
-                className={`text-left px-4 py-2 rounded-lg transition font-medium ${activeCategory === '' ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
+                type="submit"
+                className="absolute right-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-5 py-2.5 rounded-full shadow-xs transition"
               >
-                All Topics
+                Search
               </button>
-              {categories.map((c) => (
-                <button
-                  key={c._id}
-                  onClick={() => { setActiveCategory(c._id); setPage(1); }}
-                  className={`text-left px-4 py-2 rounded-lg transition font-medium ${activeCategory === c._id ? 'bg-indigo-50 text-indigo-700' : 'text-gray-600 hover:bg-gray-50'}`}
-                >
-                  {c.name}
-                </button>
-              ))}
             </div>
+          </form>
+
+          {/* Categories Pill Bar */}
+          <div className="flex flex-wrap justify-center items-center gap-2 pt-4">
+            <button
+              onClick={() => handleCategorySelect('')}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition ${
+                activeCategory === ''
+                  ? 'bg-zinc-900 text-white shadow-xs'
+                  : 'bg-white text-zinc-600 border border-zinc-200 hover:border-zinc-300 hover:text-zinc-900'
+              }`}
+            >
+              All Topics
+            </button>
+            {categories.map((c) => (
+              <button
+                key={c._id}
+                onClick={() => handleCategorySelect(c._id)}
+                className={`px-4 py-1.5 rounded-full text-xs font-medium transition ${
+                  activeCategory === c._id
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'bg-white text-zinc-600 border border-zinc-200 hover:border-zinc-300 hover:text-zinc-900'
+                }`}
+              >
+                {c.name}
+              </button>
+            ))}
           </div>
         </div>
+      </section>
 
-        {/* Main Feed */}
-        <div className="lg:col-span-3">
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      {/* Main Blog Grid Section */}
+      <main className="max-w-6xl mx-auto my-12 px-4">
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((n) => (
+              <div key={n} className="bg-white rounded-2xl p-4 border border-zinc-200/60 animate-pulse space-y-4">
+                <div className="h-48 bg-zinc-200 rounded-xl"></div>
+                <div className="h-4 bg-zinc-200 rounded w-1/3"></div>
+                <div className="h-6 bg-zinc-200 rounded w-5/6"></div>
+                <div className="h-4 bg-zinc-200 rounded w-full"></div>
+              </div>
+            ))}
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="bg-white p-12 rounded-2xl border border-zinc-200/60 text-center max-w-lg mx-auto shadow-xs my-8">
+            <div className="w-12 h-12 rounded-full bg-zinc-100 text-zinc-400 flex items-center justify-center mx-auto mb-4">
+              <BookOpen size={24} />
             </div>
-          ) : posts.length === 0 ? (
-            <div className="bg-white p-12 rounded-2xl border border-gray-100 text-center">
-              <h3 className="text-xl font-semibold text-gray-700">No articles found</h3>
-              <p className="text-gray-500 mt-2">Try adjusting your search or category filters.</p>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {posts.map((post) => (
-                  <Link to={`/post/${post.slug}`} key={post._id} className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition duration-300 flex flex-col">
-                    <div className="h-48 bg-gray-200 overflow-hidden relative">
+            <h3 className="text-xl font-bold text-zinc-900">No articles found</h3>
+            <p className="text-zinc-500 text-sm mt-2">
+              We couldn't find any articles matching your search criteria.
+            </p>
+            <button
+              onClick={() => { setKeyword(''); setActiveCategory(''); setSearchParams({}); }}
+              className="mt-6 inline-flex items-center gap-2 text-xs font-semibold bg-zinc-900 text-white px-4 py-2 rounded-full hover:bg-black transition"
+            >
+              Clear Filters
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {posts.map((post) => {
+                const readTime = calculateReadingTime(post.content, post.subtitle);
+                return (
+                  <Link
+                    to={`/post/${post.slug}`}
+                    key={post._id}
+                    className="overflow-hidden rounded-2xl group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-sm border border-zinc-200/60 bg-white flex flex-col"
+                  >
+                    {/* Cover Image Container with Hover Zoom */}
+                    <div className="h-52 bg-zinc-100 overflow-hidden relative">
                       {post.coverImage && post.coverImage !== 'no-photo.jpg' ? (
-                        <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                        <img
+                          src={post.coverImage}
+                          alt={post.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
                       ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center text-indigo-300">
-                          <Heart size={48} />
+                        <div className="w-full h-full bg-gradient-to-br from-indigo-50 to-zinc-100 flex items-center justify-center text-indigo-300">
+                          <BookOpen size={40} className="text-indigo-400/50" />
                         </div>
                       )}
+
+                      {/* Category Badge */}
                       {post.category && (
-                        <span className="absolute top-4 left-4 bg-white/90 backdrop-blur text-indigo-700 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                        <span className="absolute top-4 left-4 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold shadow-xs">
                           {post.category.name}
                         </span>
                       )}
                     </div>
-                    <div className="p-6 flex flex-col flex-grow">
-                      <h2 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition line-clamp-2">
+
+                    {/* Card Content Body */}
+                    <div className="p-6 flex flex-col flex-grow space-y-3">
+                      {/* Reading Time & Meta */}
+                      <div className="flex items-center justify-between text-xs text-zinc-400">
+                        <span className="flex items-center gap-1 font-medium text-zinc-500">
+                          <Clock size={13} className="text-zinc-400" /> {readTime} min read
+                        </span>
+                        <span className="text-zinc-400">
+                          {post.createdAt ? format(new Date(post.createdAt), 'MMM d, yyyy') : ''}
+                        </span>
+                      </div>
+
+                      {/* Title */}
+                      <h2 className="text-xl font-bold text-zinc-900 group-hover:text-indigo-600 transition duration-200 line-clamp-2 leading-snug">
                         {post.title}
                       </h2>
-                      <p className="text-gray-500 text-sm mb-4 line-clamp-2 flex-grow">
-                        {post.subtitle}
+
+                      {/* Excerpt */}
+                      <p className="text-zinc-500 text-sm line-clamp-2 flex-grow leading-relaxed">
+                        {post.subtitle || (post.content ? post.content.replace(/<[^>]+>/g, '').substring(0, 120) + '...' : '')}
                       </p>
-                      <div className="flex items-center justify-between text-xs text-gray-400 pt-4 border-t border-gray-50 mt-auto">
-                        <div className="flex items-center gap-1">
-                          <span className="font-medium text-gray-700">{post.author?.name}</span>
+
+                      {/* Card Footer: Author & Likes */}
+                      <div className="flex items-center justify-between pt-4 border-t border-zinc-100 mt-auto text-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
+                            {post.author?.name ? post.author.name.charAt(0).toUpperCase() : 'A'}
+                          </div>
+                          <span className="font-semibold text-zinc-700">{post.author?.name || 'Anonymous'}</span>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="flex items-center gap-1"><Clock size={14} /> {format(new Date(post.createdAt), 'MMM d')}</span>
-                          <span className="flex items-center gap-1"><Heart size={14} /> {post.likes?.length || 0}</span>
+
+                        <div className="flex items-center gap-3 text-zinc-400 font-medium">
+                          <span className="flex items-center gap-1 text-zinc-500">
+                            <Heart size={14} className="text-rose-500/80" fill="currentColor" /> {post.likes?.length || 0}
+                          </span>
+                          <span className="text-indigo-600 group-hover:translate-x-0.5 transition-transform">
+                            <ChevronRight size={16} />
+                          </span>
                         </div>
                       </div>
                     </div>
                   </Link>
+                );
+              })}
+            </div>
+
+            {/* Pagination Controls */}
+            {pages > 1 && (
+              <div className="flex justify-center items-center mt-12 gap-2">
+                {[...Array(pages).keys()].map((x) => (
+                  <button
+                    key={x + 1}
+                    onClick={() => setPage(x + 1)}
+                    className={`w-10 h-10 rounded-xl text-xs font-bold transition ${
+                      page === x + 1
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'bg-white text-zinc-600 border border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900'
+                    }`}
+                  >
+                    {x + 1}
+                  </button>
                 ))}
               </div>
-
-              {/* Pagination */}
-              {pages > 1 && (
-                <div className="flex justify-center mt-12 gap-2">
-                  {[...Array(pages).keys()].map((x) => (
-                    <button
-                      key={x + 1}
-                      onClick={() => setPage(x + 1)}
-                      className={`w-10 h-10 rounded-lg font-medium transition ${
-                        page === x + 1 
-                          ? 'bg-indigo-600 text-white shadow-md' 
-                          : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-                      }`}
-                    >
-                      {x + 1}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+            )}
+          </>
+        )}
+      </main>
     </div>
   );
 };

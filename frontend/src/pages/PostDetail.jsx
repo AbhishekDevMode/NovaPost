@@ -1,21 +1,20 @@
-import { useState, useEffect, useContext } from "react";
-import { useParams, Link } from "react-router-dom";
-import axios from "axios";
+import { useState, useEffect, useContext } from 'react';
+import { useParams, Link } from 'react-router-dom';
+import axios from 'axios';
 import { API_BASE_URL } from '../config/api';
-import { AuthContext } from "../context/AuthContext";
-import parse from "html-react-parser";
-import { format } from "date-fns";
-import { Heart, MessageCircle, Clock, User, Share2 } from "lucide-react";
+import { AuthContext } from '../context/AuthContext';
+import parse from 'html-react-parser';
+import { format } from 'date-fns';
+import { Heart, MessageCircle, Clock, ArrowLeft, Share2, Tag, Bookmark } from 'lucide-react';
 
 const PostDetail = () => {
   const BASE_URL = API_BASE_URL;
-
   const { slug } = useParams();
   const { user } = useContext(AuthContext);
 
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState("");
+  const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [hasLiked, setHasLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
@@ -25,17 +24,15 @@ const PostDetail = () => {
       try {
         const { data } = await axios.get(`${BASE_URL}/api/posts/${slug}`);
         setPost(data);
-        setLikeCount(data.likes.length);
-        if (user && data.likes.includes(user._id)) {
+        setLikeCount(data.likes?.length || 0);
+        if (user && data.likes?.includes(user._id)) {
           setHasLiked(true);
         }
 
-        const commentsRes = await axios.get(
-          `${BASE_URL}/api/posts/${data._id}/comments`,
-        );
-        setComments(commentsRes.data);
+        const commentsRes = await axios.get(`${BASE_URL}/api/posts/${data._id}/comments`);
+        setComments(commentsRes.data || []);
       } catch (error) {
-        console.error("Error fetching post", error);
+        console.error('Error fetching post', error);
       }
       setLoading(false);
     };
@@ -44,26 +41,22 @@ const PostDetail = () => {
   }, [slug, user]);
 
   const handleLike = async () => {
-    if (!user) return alert("Please login to like this post");
+    if (!user) return alert('Please login to like this post');
 
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.post(
-        `${BASE_URL}/api/posts/${post._id}/like`,
-        {},
-        config,
-      );
+      const { data } = await axios.post(`${BASE_URL}/api/posts/${post._id}/like`, {}, config);
 
       setHasLiked(data.includes(user._id));
       setLikeCount(data.length);
     } catch (error) {
-      console.error("Error liking post", error);
+      console.error('Error liking post', error);
     }
   };
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return alert("Please login to comment");
+    if (!user) return alert('Please login to comment');
     if (!newComment.trim()) return;
 
     try {
@@ -71,176 +64,219 @@ const PostDetail = () => {
       const { data } = await axios.post(
         `${BASE_URL}/api/posts/${post._id}/comments`,
         { text: newComment },
-        config,
+        config
       );
 
       setComments([data, ...comments]);
-      setNewComment("");
+      setNewComment('');
     } catch (error) {
-      console.error("Error posting comment", error);
+      console.error('Error posting comment', error);
     }
+  };
+
+  const calculateReadingTime = (content, subtitle) => {
+    const text = (content || '') + ' ' + (subtitle || '');
+    const cleanText = text.replace(/<[^>]+>/g, '');
+    const wordCount = cleanText.split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.ceil(wordCount / 200));
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center p-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="flex justify-center items-center py-24 min-h-[60vh]">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
 
   if (!post) {
     return (
-      <div className="text-center p-12 text-gray-500">Post not found.</div>
+      <div className="text-center py-20 px-4">
+        <h2 className="text-2xl font-bold text-zinc-900 mb-2">Post not found</h2>
+        <p className="text-zinc-500 mb-6 text-sm">The article you are looking for does not exist or has been removed.</p>
+        <Link to="/" className="bg-indigo-600 text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-indigo-700 transition">
+          Return Home
+        </Link>
+      </div>
     );
   }
 
+  const readTime = calculateReadingTime(post.content, post.subtitle);
+
   return (
-    <article className="max-w-4xl mx-auto bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-      {/* Cover Image */}
-      {post.coverImage && post.coverImage !== "no-photo.jpg" && (
-        <div className="w-full h-64 md:h-96 relative">
-          <img
-            src={post.coverImage}
-            alt={post.title}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
+    <div className="bg-zinc-50 min-h-screen">
+      {/* Back Navigation Bar */}
+      <div className="max-w-3xl mx-auto px-4 pt-6 pb-2">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-indigo-600 transition"
+        >
+          <ArrowLeft size={14} /> Back to stories
+        </Link>
+      </div>
 
-      <div className="p-8 md:p-12">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
-            <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full font-medium">
-              {post.category?.name}
-            </span>
-            <span className="flex items-center gap-1">
-              <Clock size={16} />{" "}
-              {format(new Date(post.createdAt), "MMMM d, yyyy")}
-            </span>
-          </div>
-
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
-            {post.title}
-          </h1>
-
-          {post.subtitle && (
-            <h2 className="text-xl text-gray-500 font-normal leading-relaxed mb-6">
-              {post.subtitle}
-            </h2>
-          )}
-
-          <div className="flex items-center justify-between py-6 border-y border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-inner">
-                {post.author?.name?.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <p className="font-bold text-gray-900">{post.author?.name}</p>
-                <p className="text-sm text-gray-500">Author</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleLike}
-                className={`flex items-center gap-2 px-4 py-2 rounded-full border transition ${hasLiked ? "bg-red-50 border-red-200 text-red-500" : "border-gray-200 text-gray-600 hover:bg-gray-50"}`}
-              >
-                <Heart
-                  size={20}
-                  fill={hasLiked ? "currentColor" : "none"}
-                  className={hasLiked ? "text-red-500" : ""}
-                />
-                <span className="font-medium">{likeCount}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="prose prose-lg max-w-none text-gray-800 prose-indigo prose-img:rounded-xl">
-          {parse(post.content)}
-        </div>
-
-        {/* Tags */}
-        {post.tags && post.tags.length > 0 && (
-          <div className="mt-12 flex flex-wrap gap-2">
-            {post.tags.map((tag, idx) => (
-              <span
-                key={idx}
-                className="bg-gray-100 text-gray-600 px-3 py-1 rounded-md text-sm font-medium"
-              >
-                #{tag}
+      {/* Main Single Article View */}
+      <article className="max-w-3xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-zinc-200/80 shadow-xs space-y-8">
+          
+          {/* Article Header Metadata */}
+          <header className="space-y-4 border-b border-zinc-100 pb-8">
+            <div className="flex flex-wrap items-center gap-3 text-xs">
+              {post.category && (
+                <span className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold">
+                  {post.category.name}
+                </span>
+              )}
+              <span className="flex items-center gap-1 text-zinc-500 font-medium">
+                <Clock size={13} className="text-zinc-400" /> {readTime} min read
               </span>
-            ))}
-          </div>
-        )}
+              <span className="text-zinc-300">•</span>
+              <span className="text-zinc-500 font-medium">
+                {post.createdAt ? format(new Date(post.createdAt), 'MMMM d, yyyy') : ''}
+              </span>
+            </div>
 
-        {/* Comments Section */}
-        <div className="mt-16 pt-12 border-t border-gray-100">
-          <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
-            <MessageCircle size={24} /> Comments ({comments.length})
-          </h3>
+            {/* Main Article Title */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-zinc-900 tracking-tight leading-tight">
+              {post.title}
+            </h1>
 
-          {/* Comment Form */}
-          {user ? (
-            <form onSubmit={handleCommentSubmit} className="mb-10">
-              <textarea
-                className="w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition resize-none"
-                rows="3"
-                placeholder="Share your thoughts..."
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-              ></textarea>
-              <div className="flex justify-end mt-2">
+            {/* Subtitle / Excerpt */}
+            {post.subtitle && (
+              <p className="text-lg text-zinc-500 font-normal leading-relaxed">
+                {post.subtitle}
+              </p>
+            )}
+
+            {/* Author Profile & Interaction Ribbon */}
+            <div className="flex items-center justify-between pt-6">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-600 to-violet-500 text-white flex items-center justify-center font-bold text-base shadow-sm">
+                  {post.author?.name ? post.author.name.charAt(0).toUpperCase() : 'A'}
+                </div>
+                <div>
+                  <h4 className="font-bold text-zinc-900 text-sm">{post.author?.name || 'Anonymous Author'}</h4>
+                  <p className="text-xs text-zinc-400">Writer & Contributor</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
                 <button
-                  type="submit"
-                  className="bg-gray-900 hover:bg-black text-white px-6 py-2 rounded-lg font-medium transition shadow-md"
+                  onClick={handleLike}
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold border transition ${
+                    hasLiked
+                      ? 'bg-rose-50 border-rose-200 text-rose-600'
+                      : 'border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50'
+                  }`}
                 >
-                  Post Comment
+                  <Heart
+                    size={16}
+                    fill={hasLiked ? 'currentColor' : 'none'}
+                    className={hasLiked ? 'text-rose-500' : 'text-zinc-400'}
+                  />
+                  <span>{likeCount}</span>
                 </button>
               </div>
-            </form>
-          ) : (
-            <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 mb-10 text-center">
-              <p className="text-gray-600 mb-4">Join the conversation</p>
-              <Link
-                to="/login"
-                className="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700 transition inline-block shadow-md"
-              >
-                Log in to Comment
-              </Link>
+            </div>
+          </header>
+
+          {/* Article Cover Image */}
+          {post.coverImage && post.coverImage !== 'no-photo.jpg' && (
+            <div className="overflow-hidden rounded-2xl border border-zinc-200/60 shadow-xs max-h-96">
+              <img
+                src={post.coverImage}
+                alt={post.title}
+                className="w-full h-full object-cover"
+              />
             </div>
           )}
 
-          {/* Comments List */}
-          <div className="space-y-6">
-            {comments.map((comment) => (
-              <div
-                key={comment._id}
-                className="bg-gray-50 p-6 rounded-2xl border border-gray-100"
-              >
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center font-bold text-sm">
-                      {comment.author?.name?.charAt(0).toUpperCase()}
+          {/* Article Body with Tailwind Typography (prose prose-lg prose-zinc prose-indigo) */}
+          <div className="prose prose-lg prose-zinc prose-indigo max-w-none py-2 text-zinc-800 leading-relaxed">
+            {parse(post.content || '')}
+          </div>
+
+          {/* Tag Cloud */}
+          {post.tags && post.tags.length > 0 && (
+            <div className="pt-6 border-t border-zinc-100 flex flex-wrap items-center gap-2">
+              <Tag size={14} className="text-zinc-400" />
+              {post.tags.map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full text-xs font-medium border border-zinc-200/60"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Comments Section */}
+          <section className="pt-10 border-t border-zinc-200/80 space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-zinc-900 flex items-center gap-2">
+                <MessageCircle size={20} className="text-indigo-600" />
+                <span>Discussion ({comments.length})</span>
+              </h3>
+            </div>
+
+            {/* Comment Submission Form */}
+            {user ? (
+              <form onSubmit={handleCommentSubmit} className="space-y-3">
+                <textarea
+                  className="w-full p-4 bg-zinc-50 border border-zinc-200 rounded-2xl text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition resize-none"
+                  rows="3"
+                  placeholder="What are your thoughts on this story?"
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                ></textarea>
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    className="bg-zinc-900 hover:bg-black text-white text-xs font-semibold px-5 py-2.5 rounded-full shadow-xs transition"
+                  >
+                    Publish Comment
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="bg-zinc-50 p-6 rounded-2xl border border-zinc-200/80 text-center space-y-3">
+                <p className="text-sm text-zinc-500 font-medium">Join the discussion with fellow readers.</p>
+                <Link
+                  to="/login"
+                  className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-5 py-2 rounded-full shadow-xs transition"
+                >
+                  Log in to comment
+                </Link>
+              </div>
+            )}
+
+            {/* Comments List */}
+            <div className="space-y-4 pt-4">
+              {comments.map((comment) => (
+                <div
+                  key={comment._id}
+                  className="p-5 rounded-2xl bg-zinc-50/70 border border-zinc-200/60 space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs">
+                        {comment.author?.name ? comment.author.name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                      <span className="font-bold text-zinc-900 text-xs">{comment.author?.name || 'User'}</span>
                     </div>
-                    <span className="font-bold text-gray-900">
-                      {comment.author?.name}
+                    <span className="text-xs text-zinc-400 font-medium">
+                      {comment.createdAt ? format(new Date(comment.createdAt), 'MMM d, yyyy') : ''}
                     </span>
                   </div>
-                  <span className="text-xs text-gray-500">
-                    {format(new Date(comment.createdAt), "MMM d, yyyy")}
-                  </span>
+                  <p className="text-zinc-700 text-sm pl-9 leading-relaxed">{comment.text}</p>
                 </div>
-                <p className="text-gray-700 pl-10">{comment.text}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          </section>
         </div>
-      </div>
-    </article>
+      </article>
+    </div>
   );
 };
 
