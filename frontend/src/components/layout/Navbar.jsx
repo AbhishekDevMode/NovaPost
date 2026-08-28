@@ -13,7 +13,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center gap-2">
               <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 text-transparent bg-clip-text">
-                BlogSpace
+                NovaPost
               </span>
             </Link>
           </div>
