@@ -20,7 +20,7 @@ const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 backdrop-blur-md bg-white/80 dark:bg-zinc-900/80 border-b border-zinc-200/80 dark:border-zinc-800/80 transition-colors duration-200">
       <div className="flex items-center justify-between max-w-6xl mx-auto px-4 py-4">
-        {/* Brand Logo */}
+        
         <Link to="/" className="flex items-center gap-2 group">
           <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-xl shadow-md group-hover:bg-indigo-700 transition">
             N
